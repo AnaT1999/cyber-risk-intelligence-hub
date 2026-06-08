@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Ignorar datasets pesados locais
+data/raw/**/*.csv
+data/raw/**/*.json
+!data/raw/threat_intel/enterprise-attack.json
