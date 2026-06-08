@@ -132,44 +132,4 @@ def calculate_meta_risk(cvar: float, systemic_score: float, model_uncertainty:fl
 
     meta_score = (cvar * weights['cvar']) + (systemic_score * weights['systemic']) + (model_uncertainty * weights['uncertainty'])
     
-    return float (np.clip(meta_score, 0.0, 100.0)) # garante que o Meta-Risco esteja entre 0 e 100 
-
-# ==========================================
-# BLOCO DE TESTE
-# ==========================================
-if __name__ == "__main__":
-    print("A INICIAR TESTES DA CALCULADORA DE RISCO...\n")
-    
-    # 1. Testar PQR
-    pqr_val = calculate_pqr(criticality=5, algo_vulnerability=5.0, mitigation_level=1.0)
-    print(f"1. PQR (Risco Quântico) -> Esperado ~4.10 | Resultado: {pqr_val:.2f}")
-    
-    # 2. Testar DRI
-    dri_val = calculate_dri(reach=1000000, velocity=8.5, sentiment=-0.8, ai_prob=0.95)
-    print(f"2. DRI (Desinformação) -> Resultado Normalizado: {dri_val:.2f}/100.0")
-    
-    # 3. Testar Propagação Sistémica (Matriz 3x3)
-    adj_matrix = np.array([
-        [0.0, 0.8, 0.0],  # Nó 0 afeta Nó 1 fortemente
-        [0.0, 0.0, 0.5],  # Nó 1 afeta Nó 2
-        [0.0, 0.0, 0.0]   # Nó 2 não afeta ninguém
-    ])
-    init_risk = np.array([0.9, 0.2, 0.1])
-    sys_risk = propagate_systemic_risk(adj_matrix, init_risk, iterations=2)
-    print(f"3. Risco Sistémico -> Risco Inicial: {init_risk} | Risco Pós-Contágio: {np.round(sys_risk, 2)}")
-    
-    # 4. Testar VaR e CVaR (Com 1000 perdas financeiras simuladas)
-    np.random.seed(42) # Para resultados consistentes no teste
-    simulated_losses = np.random.normal(loc=50000, scale=15000, size=1000)
-    var, cvar = calculate_var_cvar(simulated_losses)
-    print(f"4. Cyber-VaR e CVaR -> VaR (95%): {var:.2f}€ | CVaR: {cvar:.2f}€")
-    
-    # 5. Testar Monte Carlo (Trajetórias SDE)
-    mc_paths = simulate_monte_carlo_risk(initial_risk=30.0, drift=0.02, volatility=0.15, steps=10, simulations=5)
-    print(f"5. Simulação Monte Carlo -> Matriz gerada com sucesso! Formato (Passos, Simulações): {mc_paths.shape}")
-    
-    # 6. Testar Meta-Risco Agregado
-    meta = calculate_meta_risk(cvar=85.0, systemic_score=sys_risk.mean()*100, model_uncertainty=15.0)
-    print(f"6. Score Executivo (Meta-Risco) -> Resultado: {meta:.2f}/100.0")
-    
-    print("\nTESTES CONCLUÍDOS! Se não houver erros acima, a calculadora está perfeita.")
+    return float (np.clip(meta_score, 0.0, 100.0)) # garante que o Meta-Risco esteja entre 0 e 100
