@@ -4,6 +4,7 @@ import os
 import plotly.express as px
 from utils.visuals import plot_donut_chart, plot_bar_chart, plot_3d_scatter, plot_boxplot, plot_heatmap, plot_scatter, plot_violin
 import json
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Dashboard Estático", layout="wide")
 
@@ -33,37 +34,47 @@ st.sidebar.header("Controlos do Dashboard")
 # O "Interruptor" principal
 modo_visualizacao = st.sidebar.radio(
     "Selecione o Modo de Visualização:",
-    ["Dashboards de Raiz (Python)", "Dashboards Importados"]
+    ["Dashboards de Raiz", "Dashboards Importados"]
 )
 
 st.sidebar.divider()
 
 #---------------------------------------------------------------
 if modo_visualizacao == "Dashboards Importados":
-    st.subheader("Galeria de Dashboards Externos")
-    st.write("Faça o upload de avaliações de risco geradas noutras plataformas (ex: PowerBI, Excel, Tableau) para centralizar a informação visual.")
+    st.subheader("Integração de Dashboards Externos (Interativos)")
+    st.write("Incorpore painéis vivos de plataformas externas (Power BI, Tableau, Grafana) colando o Link de Partilha (URL).")
     
-    # Criar a área de Drag & Drop para Imagens
+    # 1. Integração Interativa (O Método Real)
+    url_dashboard = st.text_input(
+        "Cole aqui o Link Web do Dashboard (ex: Power BI Publish to Web):", 
+        placeholder="https://app.powerbi.com/view?r=..."
+    )
+    
+    if url_dashboard:
+        st.success("A carregar o motor interativo externo...")
+        # Cria uma "janela" dentro da nossa app que corre o site externo
+        components.iframe(url_dashboard, width=None, height=700, scrolling=True)
+    
+    st.divider()
+    
+    # 2. Arquivo Estático (Para relatórios em PDF/Imagem como alternativa)
+    st.markdown("#### Arquivo de Relatórios Estáticos")
+    st.write("Em alternativa, faça o upload de capturas de ecrã para registo histórico.")
+    
     uploaded_files = st.file_uploader(
-        "Carregar imagens de dashboards", 
+        "Carregar imagens", 
         type=["png", "jpg", "jpeg"], 
         accept_multiple_files=True
     )
     
-    st.divider()
-    
-    # Lógica para mostrar as imagens carregadas
     if uploaded_files:
-        st.success(f"{len(uploaded_files)} dashboard(s) carregado(s) com sucesso!")
-        
-        # Mostrar cada imagem carregada com o respetivo nome
+        st.success(f"{len(uploaded_files)} relatório(s) carregado(s) com sucesso!")
         for uploaded_file in uploaded_files:
-            st.image(uploaded_file, caption=f"Ficheiro: {uploaded_file.name}", use_column_width=True)
+            # Corrigido o erro amarelo do teu print (use_container_width em vez de use_column_width)
+            st.image(uploaded_file, caption=f"Ficheiro: {uploaded_file.name}", use_container_width=True)
             st.markdown("---")
-    else:
-        st.info("A aguardar upload... Utilize a área acima para arrastar e largar os seus prints ou imagens.")
 
-elif modo_visualizacao == "Dashboards de Raiz (Python)":
+elif modo_visualizacao == "Dashboards de Raiz":
     st.subheader("Motor Analítico: Dados Globais")
     st.write("Análise interativa em tempo real baseada no motor matemático e nos datasets estáticos locais.")
     
