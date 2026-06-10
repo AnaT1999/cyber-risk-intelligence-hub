@@ -41,7 +41,7 @@ st.sidebar.divider()
 
 #---------------------------------------------------------------
 if modo_visualizacao == "Dashboards Importados":
-    st.subheader("Integração de Dashboards Externos (Interativos)")
+    st.subheader("https://ourworldindata.org/grapher/share-of-individuals-using-the-internetIntegração de Dashboards Externos (Interativos)")
     st.write("Incorpore painéis vivos de plataformas externas (Power BI, Tableau, Grafana) colando o Link de Partilha (URL).")
     
     # 1. Integração Interativa (O Método Real)
