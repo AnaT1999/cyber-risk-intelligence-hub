@@ -6,6 +6,8 @@ import math
 from datetime import datetime
 from fpdf import FPDF
 from utils.risk_calculators import calculate_fair_ale, calculate_iso_risk, calculate_advanced_pqr, calculate_dri, calculate_var_cvar
+import zipfile
+import io
 
 st.markdown("## :shield: Avaliação Unificada de Risco Corporativo (NIST & FAIR)")
 st.write("Preencha o formulário detalhado abaixo para quantificar a postura de cibersegurança da sua organização. Este questionário cruza dados financeiros, organizacionais e de infraestrutura técnica.")
@@ -313,23 +315,47 @@ if submitted:
     }
 
     # --- EXPORTAÇÕES ---
-    st.markdown("#### :material/cloud_download: Exportar Relatório Oficial")
+    st.markdown("#### :material/cloud_download: Exportar Relatório Oficial e Matrizes de Dados")
     
-    col_pdf, col_json, col_csv = st.columns(3)
+    # 1. Gerar os bytes de todos os ficheiros antecipadamente
+    from utils.report_generator import generate_pdf
+    from utils.excel_generator import generate_excel
+    
+    pdf_bytes = generate_pdf(dados_para_pdf)
+    excel_bytes = generate_excel(dados_para_pdf)
+    json_str = json.dumps(dados_para_pdf, indent=4)
+    
+    # 2. Layout dos 3 botões individuais
+    col_pdf, col_excel, col_json = st.columns(3)
     
     with col_pdf:
-        from utils.report_generator import generate_luxury_pdf
-        pdf_bytes = generate_luxury_pdf(dados_para_pdf)
-        st.download_button(label=":material/picture_as_pdf: Exportar Relatório (PDF)", data=pdf_bytes, file_name="relatorio_risco_executivo_formal.pdf", mime="application/pdf", use_container_width=True)
+        st.download_button(label=":material/picture_as_pdf: Relatório Executivo (PDF)", data=pdf_bytes, file_name="relatorio_risco_executivo.pdf", mime="application/pdf", use_container_width=True)
         
+    with col_excel:
+        st.download_button(
+            label=":material/table_chart: Matriz Estruturada (EXCEL)", 
+            data=excel_bytes, 
+            file_name="matriz_risco_detalhada.xlsx", 
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
+            use_container_width=True
+        )
+
     with col_json:
-        dados_dict = {
-            "Orcamento_Empresa": revenue, "Score_Global": round(risco_global_score, 1), 
-            "IoT_ISO_Risco": round(risco_iso_base, 1), "PQR_Residual": round(r_residual, 1), "DRI_Risco": round(risco_dri_perc, 1),
-            "FAIR_ALE": round(ale_val, 2), "VaR_95": round(var_95, 2), "CVaR_Pior_Cenario": round(cvar_95, 2)
-        }
-        st.download_button(label=":material/data_object: Exportar Dados (JSON)", data=json.dumps(dados_dict, indent=4), file_name="telemetria_risco.json", mime="application/json", use_container_width=True)
+        st.download_button(label=":material/data_object: Telemetria Pura (JSON)", data=json_str, file_name="telemetria_risco.json", mime="application/json", use_container_width=True)
+    
+    # 3. Criar o pacote ZIP com os 3 ficheiros
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        zip_file.writestr("relatorio_risco_executivo.pdf", pdf_bytes)
+        zip_file.writestr("matriz_risco_detalhada.xlsx", excel_bytes)
+        zip_file.writestr("telemetria_risco.json", json_str)
         
-    with col_csv:
-        df_export = pd.DataFrame([dados_dict])
-        st.download_button(label=":material/table: Exportar Tabela (CSV)", data=df_export.to_csv(index=False).encode('utf-8'), file_name="matriz_risco.csv", mime="text/csv", use_container_width=True)
+    # 4. O Botão Estável de Download Múltiplo
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.download_button(
+        label=":material/folder_zip: Descarregar Pacote Completo de Auditoria (ZIP)", 
+        data=zip_buffer.getvalue(), 
+        file_name="pacote_auditoria_risco.zip", 
+        mime="application/zip", 
+        use_container_width=True
+    )
