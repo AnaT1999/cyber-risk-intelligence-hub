@@ -3,21 +3,6 @@ import numpy as np
 import pandas as pd
 from typing import Tuple, Dict
 
-## --- Risco Criptográfico Pós-Quântico (PQR) --- ##
-
-def calculate_pqr(criticality:int, algo_vulnerability:float, mitigation_level:float) -> float:
-    r"""
-    Calcula o Fator de Risco Criptográfico Pós-Quântico (PQR).
-    Baseado na equação linear de auditoria algorítmica.
-    Fórmula: $PQR=\alpha\cdot C+\beta\cdot V-\gamma\cdot M$
-    """
-    alpha = 0.40  # Peso para a criticidade
-    beta = 0.45   # Peso para a vulnerabilidade do algoritmo
-    gamma = 0.15  # Peso para o nível de mitigação
-
-    pqr = (alpha * criticality) + (beta * algo_vulnerability) - (gamma * mitigation_level)
-    return max (0.0, float(pqr))
-
 ## --- Índice de Risco de Desinformação (DRI) --- ##
 
 def calculate_dri(reach:int, velocity: float, sentiment:float, ai_prob:float) -> float:
@@ -203,3 +188,57 @@ def calculate_advanced_pqr(i_longevity: int, i_dados: int, p_quantum: int, p_har
     r_residual = r_hndl * (1.0 - mitigation_pqc) * (1.0 - mitigation_qkd)
 
     return min(100.0, r_futuro), min(100.0, r_hndl), min(100.0, r_residual)
+
+
+## --- FUNÇÕES PARA O SIMULADOR PREDITIVO --- ##
+
+def simulate_financial_monte_carlo(ale_initial: float, drift: float, volatility: float, years: int = 5, simulations: int = 1000, taxa_obsolescencia: float = 0.0) -> np.ndarray:
+    r"""
+    Simulação Financeira Estocástica (Geometric Brownian Motion) com Obsolescência.
+    A taxa de obsolescência tecnológica reduz a eficácia das defesas ao longo do tempo,
+    criando um 'decay' que força o risco a voltar a subir (Risk Decay).
+    """
+    dt = 1.0  
+    paths = np.zeros((years + 1, simulations))
+    paths[0] = ale_initial
+
+    for t in range(1, years + 1):
+        random_shock = np.random.standard_normal(simulations)
+        
+        # A obsolescência atua como uma força que aumenta o 'drift' (o risco acelera porque a tecnologia envelhece)
+        drift_real = drift + (taxa_obsolescencia * t)
+        
+        growth_factor = np.exp((drift_real - 0.5 * volatility**2) * dt + volatility * np.sqrt(dt) * random_shock)
+        paths[t] = paths[t-1] * growth_factor
+
+    return paths
+
+def calculate_rosi(ale_as_is: float, ale_to_be: float, cost_of_mitigation: float) -> float:
+    r"""
+    Calcula o ROSI Estocástico (Baseado no Valor Esperado E de Monte Carlo).
+    """
+    if cost_of_mitigation <= 0:
+        return 0.0
+        
+    risk_mitigated = ale_as_is - ale_to_be
+    rosi = ((risk_mitigated - cost_of_mitigation) / cost_of_mitigation) * 100.0
+    
+    return float(rosi)
+
+def quantum_threat_curve(years_to_simulate: int = 10, data_sensitivity: int = 3) -> list:
+    r"""
+    Gera a Curva Logística (Y2Q) Dinâmica.
+    A inclinação acelera consoante a sensibilidade dos dados (Harvest Now, Decrypt Later).
+    """
+    probabilities = []
+    # Calibração Científica. Inclinação entre 1.0 e 1.4
+    base_steepness = 0.8
+    # Dados mais sensíveis forçam a perceção de risco quântico a acelerar
+    steepness = base_steepness + (0.10 * data_sensitivity) 
+    midpoint = 7.5  
+    
+    for t in range(years_to_simulate + 1):
+        prob = 100.0 / (1.0 + math.exp(-steepness * (t - midpoint)))
+        probabilities.append(prob)
+        
+    return probabilities

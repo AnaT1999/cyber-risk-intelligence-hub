@@ -1,20 +1,20 @@
 import streamlit as st
-import pandas as pd
 import json
 import numpy as np
 import math
 from datetime import datetime
-from fpdf import FPDF
 from utils.risk_calculators import calculate_fair_ale, calculate_iso_risk, calculate_advanced_pqr, calculate_dri, calculate_var_cvar
 import zipfile
 import io
+from utils.report_generator import generate_pdf
+from utils.excel_generator import generate_excel
 
 st.markdown("## :shield: Avaliação Unificada de Risco Corporativo (NIST & FAIR)")
 st.write("Preencha o formulário detalhado abaixo para quantificar a postura de cibersegurança da sua organização. Este questionário cruza dados financeiros, organizacionais e de infraestrutura técnica.")
 
 st.markdown("---")
 
-# --- FORMULÁRIO UNIFICADO  ---
+# --- FORMULÁRIO   ---
 with st.form("form_risco_global_avancado"):
     
     # --- BLOCO 1: CONTEXTO DE NEGÓCIO E ATIVOS (FAIR & ISO) ---
@@ -166,7 +166,7 @@ with st.form("form_risco_global_avancado"):
 if submitted:
     st.markdown("## :material/analytics: Relatório Oficial de Avaliação de Risco")
     
-    # Mapeamento ultra-seguro (procura apenas palavras-chave imutáveis)
+    # Mapeamento  (procura apenas palavras-chave imutáveis)
     map_asset = {"Baixa": 1, "Moderada": 2, "Elevada": 3, "Crítica": 5}
     asset_val = next(v for k, v in map_asset.items() if k in asset_value_text)
     
@@ -197,14 +197,13 @@ if submitted:
     map_crypto = {"AES-256": 1, "RSA-4096": 2, "RSA-2048": 4, "DES/3DES": 5}
     p_quantum = next(v for k, v in map_crypto.items() if k in crypto_alg_text)
     
-    # AQUI ESTAVA O ERRO PRINCIPAL. Palavras-chave corrigidas:
+    # Palavras-chave 
     map_rsa_long = {"Não aplicável": 1, "sessões curtas": 2, "arquivos guardados": 4, "dados altamente críticos": 5}
     rsa_long_val = next(v for k, v in map_rsa_long.items() if k in rsa_long_term_text)
     
     map_harvest = {"Isolado": 1, "Redes normais": 2, "Canais corporativos": 3, "Canais públicos": 5}
     p_harvest = next(v for k, v in map_harvest.items() if k in p_harvest_text)
     
-    # AQUI ESTAVA OUTRO POTENCIAL ERRO CORRIGIDO:
     map_mpqc = {"Sem qualquer": 1, "conceptual": 2, "piloto": 4, "execução": 5}
     m_pqc = next(v for k, v in map_mpqc.items() if k in m_pqc_text)
     
@@ -214,7 +213,7 @@ if submitted:
     map_response = {"< 1 Hora": 0.5, "1 a 24 Horas": 1.5, "Dias": 3.0, "Semanas": 5.0}
     velocity_val = next(v for k, v in map_response.items() if k in response_time)
 
-    # --- EXECUÇÃO DOS CÁLCULOS MATEMÁTICOS ---
+    # --- CÁLCULOS MATEMÁTICOS ---
     # 1. FAIR Financeiro
     lef_annual, lm_total, ale_val = calculate_fair_ale(revenue, float(tef_score), float(vuln_score), float(nist_maturity), float(i_dados))
     
@@ -255,7 +254,7 @@ if submitted:
     colB.metric("Risco Quântico Residual", f"{r_residual:.1f}%", f"Estado: {calc_level(r_residual)[0]}", delta_color="off")
     colC.metric("Risco Reputacional (DRI)", f"{risco_dri_perc:.1f}%", f"Estado: {calc_level(risco_dri_perc)[0]}", delta_color="off")
 
-    # --- NOVO BLOCO QUANTITATIVO FINANCEIRO (FAIR & VaR/CVaR) ---
+    # ---  BLOCO QUANTITATIVO FINANCEIRO (FAIR & VaR/CVaR) ---
     st.markdown("### :material/monetization_on: Exposição Financeira Anualizada (Modelo FAIR & Cauda Pesada)")
     st.write("Abaixo encontra a tradução exata dos riscos técnicos em valores monetários reais, essencial para discussão em conselhos de administração.")
     
@@ -314,18 +313,115 @@ if submitted:
         "Q18_Resposta": response_time
     }
 
-    # --- EXPORTAÇÕES ---
-    st.markdown("#### :material/cloud_download: Exportar Relatório Oficial e Matrizes de Dados")
+# --- EXPORTAÇÕES  ---
+    st.session_state['ale_val'] = dados_para_pdf.get("FAIR_ALE", 50000.0)
+    st.session_state['revenue'] = dados_para_pdf.get("Orcamento_Empresa", 1000000.0)
     
-    # 1. Gerar os bytes de todos os ficheiros antecipadamente
-    from utils.report_generator import generate_pdf
-    from utils.excel_generator import generate_excel
+    # Extrair a maturidade NIST (1 a 4) a partir do texto que vai para o Excel
+    nist_texto = dados_para_pdf.get("Q9_NIST", "Tier 1")
+    if "Tier 1" in nist_texto: st.session_state['nist_mat'] = 1
+    elif "Tier 2" in nist_texto: st.session_state['nist_mat'] = 2
+    elif "Tier 3" in nist_texto: st.session_state['nist_mat'] = 3
+    else: st.session_state['nist_mat'] = 4
+
+    # Extrair a sensibilidade dos dados (1 a 5) a partir do texto
+    dados_texto = dados_para_pdf.get("Q3_Dados", "Públicos")
+    if "Públicos" in dados_texto: st.session_state['q_dados'] = 1
+    elif "Internos" in dados_texto: st.session_state['q_dados'] = 2
+    elif "Confidenciais" in dados_texto: st.session_state['q_dados'] = 3
+    elif "Secretos" in dados_texto: st.session_state['q_dados'] = 4
+    else: st.session_state['q_dados'] = 5
+    
+    # Guarda o dicionário inteiro para o futuro
+    st.session_state['dados_completos'] = dados_para_pdf
+
+    st.markdown("#### :material/cloud_download: Exportar Relatório Oficial e Matrizes de Dados")
     
     pdf_bytes = generate_pdf(dados_para_pdf)
     excel_bytes = generate_excel(dados_para_pdf)
     json_str = json.dumps(dados_para_pdf, indent=4)
     
-    # 2. Layout dos 3 botões individuais
+    # --- CSS  ---
+    st.markdown("""
+    <style>
+    /* Estilo Base unificado e Cor Padrão (ZIP - Roxo) */
+    [data-testid="stDownloadButton"] button {
+        background-color: #5b21b6 !important; /* Roxo para o botão solto (ZIP) */
+        border-color: #8b5cf6 !important;
+        color: #ffffff !important;
+        border-radius: 10px !important;
+        padding: 12px 20px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease-in-out !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
+        border: 1px solid transparent !important;
+    }
+    [data-testid="stDownloadButton"] button:hover {
+        background-color: #6d28d9 !important; /* Roxo Hover */
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+    }
+
+    /* 1. Botão PDF (Dentro da 1ª Coluna) - Vermelho */
+    [data-testid="stColumn"]:nth-of-type(1) [data-testid="stDownloadButton"] button {
+        background-color: #991b1b !important; 
+        border-color: #ef4444 !important;
+    }
+    [data-testid="stColumn"]:nth-of-type(1) [data-testid="stDownloadButton"] button:hover {
+        background-color: #b91c1c !important;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+    }
+
+    /* 2. Botão EXCEL (Dentro da 2ª Coluna) - Verde */
+    [data-testid="stColumn"]:nth-of-type(2) [data-testid="stDownloadButton"] button {
+        background-color: #065f46 !important; 
+        border-color: #10b981 !important;
+    }
+    [data-testid="stColumn"]:nth-of-type(2) [data-testid="stDownloadButton"] button:hover {
+        background-color: #047857 !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+    }
+
+    /* 3. Botão JSON (Dentro da 3ª Coluna) - Laranja */
+    [data-testid="stColumn"]:nth-of-type(3) [data-testid="stDownloadButton"] button {
+        background-color: #9a3412 !important; 
+        border-color: #f97316 !important;
+    }
+    [data-testid="stColumn"]:nth-of-type(3) [data-testid="stDownloadButton"] button:hover {
+        background-color: #c2410c !important;
+        box-shadow: 0 4px 12px rgba(249, 73, 22, 0.3) !important;
+    }
+
+    /* 5. Estilo do Botão Final (Página 3) */
+    [data-testid="stPageLink"] a {
+        background-color: #1e3a8a !important; 
+        border: 1px solid #3b82f6 !important; 
+        color: #eff6ff !important; 
+        padding: 20px !important;
+        border-radius: 12px !important;
+        text-align: center !important;
+        font-size: 1.25rem !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+        transition: all 0.3s ease-in-out !important;
+        display: flex !important;
+        justify-content: center !important;
+        text-decoration: none !important;
+    }
+    [data-testid="stPageLink"] a:hover {
+        background-color: #1e40af !important; 
+        border-color: #60a5fa !important;
+        transform: translateY(-3px) !important;
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
+    }
+    [data-testid="stPageLink"] a p {
+        font-size: 1.15rem !important;
+        margin: 0 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # 2. Layout dos 3 botões de downlaod
     col_pdf, col_excel, col_json = st.columns(3)
     
     with col_pdf:
@@ -350,7 +446,7 @@ if submitted:
         zip_file.writestr("matriz_risco_detalhada.xlsx", excel_bytes)
         zip_file.writestr("telemetria_risco.json", json_str)
         
-    # 4. O Botão Estável de Download Múltiplo
+    # 4. O Botão Estável de Download Múltiplo (ZIP)
     st.markdown("<br>", unsafe_allow_html=True)
     st.download_button(
         label=":material/folder_zip: Descarregar Pacote Completo de Auditoria (ZIP)", 
@@ -359,3 +455,15 @@ if submitted:
         mime="application/zip", 
         use_container_width=True
     )
+
+    # --- 5. BOTÃO DE REDIRECIONAMENTO ---
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.page_link(
+        page="pages/3_Simulador_Cenarios.py", 
+        label="Concluir Avaliação e Carregar Dados no Simulador de Cenários", 
+        icon=":material/arrow_forward:", 
+        use_container_width=True
+    )
+
+st.markdown("---")
+st.caption("Desenvolvido no âmbito da disciplina de Avaliação do Risco em Cibersegurança | © 2026")

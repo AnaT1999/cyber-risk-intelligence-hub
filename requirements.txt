@@ -9,3 +9,4 @@ requests
 datasets
 pyarrow
 fpdf2
+xlsxwriter

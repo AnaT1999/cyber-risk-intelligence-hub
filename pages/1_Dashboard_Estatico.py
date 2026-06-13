@@ -419,7 +419,7 @@ elif modo_visualizacao == "Dashboards de Raiz":
                 st.plotly_chart(fig_bar, use_container_width=True)
                 
             with colB:
-                # Gráfico 2: Treemap (Mantido Nativo)
+                # Gráfico 2: Treemap 
                 df_mitre['Framework'] = 'MITRE ATT&CK'
                 fig_tree = px.treemap(df_mitre, path=['Framework', 'Tática', 'Técnica'], title='Matriz Tática Hierárquica (Treemap)', color_discrete_sequence=px.colors.qualitative.Pastel)
                 fig_tree.update_traces(root_color="lightgrey")
@@ -503,7 +503,7 @@ elif modo_visualizacao == "Dashboards de Raiz":
             st.write("**Matriz Unificada de Inteligência (Corpus + EPSS):**")
             st.dataframe(df_vun.head(1000), use_container_width=True)
             
-            # 4. DASHBOARD INTERATIVO (ATOMIZADO)
+            # 4. DASHBOARD INTERATIVO
             st.markdown("### Matriz de Priorização de Decisão Executiva")
             
             colA, colB = st.columns(2)
@@ -556,3 +556,6 @@ elif modo_visualizacao == "Dashboards de Raiz":
                     mapa_cores = {'LOW': '#22c55e', 'MEDIUM': '#eab308', 'HIGH': '#f97316', 'CRITICAL': '#ef4444'}
                     fig_box = plot_boxplot(df_box, 'base_severity', 'epss_score', 'base_severity', 'A Incoerência do Risco: EPSS Score dentro das Severidades Oficiais', category_orders={'base_severity': ordem_sev}, color_map=mapa_cores, y_tickformat='.1%')
                     st.plotly_chart(fig_box, use_container_width=True)
+    
+st.markdown("---")
+st.caption("Desenvolvido no âmbito da disciplina de Avaliação do Risco em Cibersegurança | © 2026")
