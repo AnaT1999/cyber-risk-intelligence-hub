@@ -10,3 +10,5 @@ datasets
 pyarrow
 fpdf2
 xlsxwriter
+pypdf
+openpyxl

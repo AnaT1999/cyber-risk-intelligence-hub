@@ -38,6 +38,7 @@ else:
     sensibilidade_dados = 3
     iot_texto = "Moderada"
     risco_inicial_iot = 0.50
+    dados_completos = {}
 
 # --- CALIBRAÇÃO DINÂMICA DE RISCO ---
 drift_dinamico = 0.20 - (mat_nist * 0.02)  
