@@ -23,4 +23,4 @@ A plataforma foi construída em Python (Streamlit) e segue uma arquitetura modul
 2. Instale as dependências:
    `pip install -r requirements.txt`
 3. Execute a aplicação Streamlit:
-   `streamlit run app.py`
+   `streamlit run app.py` ou  ` python -m streamlit run app.py`
