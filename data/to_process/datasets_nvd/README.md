@@ -61,16 +61,16 @@ Após o download:
 
 Cria a seguinte estrutura:
 /data/
-  |_/to_process/
-    |_/datasets_nvd/
-       |_nvdcve-2.0-2019.json
-       |_nvdcve-2.0-2020.json
-       |_nvdcve-2.0-2021.json
-       |_nvdcve-2.0-2022.json
-       |_nvdcve-2.0-2023.json
-       |_nvdcve-2.0-2024.json
-       |_nvdcve-2.0-2025.json
-       |_nvdcve-2.0-2026.json
+/to_process/
+/datasets_nvd/
+nvdcve-2.0-2019.json
+nvdcve-2.0-2020.json
+nvdcve-2.0-2021.json
+nvdcve-2.0-2022.json
+nvdcve-2.0-2023.json
+nvdcve-2.0-2024.json
+nvdcve-2.0-2025.json
+nvdcve-2.0-2026.json
 
 
 Se utilizares outro diretório, ajusta o caminho no script de treino.
