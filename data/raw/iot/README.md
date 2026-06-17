@@ -32,10 +32,11 @@ Move o ficheiro `archive.zip` para:
 
 
 A estrutura deverá ficar assim:
-/data/
- |_/raw/
-    |_/iot/
-       |_archive.zip
+
+- **/data/**
+  - **/raw/**
+    - **/iot/**
+      - `archive.zip`
 
 
 ---

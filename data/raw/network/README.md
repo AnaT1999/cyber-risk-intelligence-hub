@@ -33,10 +33,14 @@ Move o ficheiro `archive.zip` para:
 
 
 A estrutura deverá ficar assim:
-/data/
-  |_/raw/
-     |_/network/
-        |_archive.zip
+
+
+Cria a seguinte estrutura:
+
+- **/data/**
+  - **/raw/**
+    - **/network/**
+      - `archive.zip`
 
 
 ---
@@ -67,10 +71,11 @@ Diferente dos outros datasets, **apenas um ficheiro é necessário**:
 Todos os restantes ficheiros podem ser removidos após a extração.
 
 A estrutura final deverá ser:
-/data/
-  |_/raw/
-     |_/network/
-        |_UNSW-NB15_1.csv
+
+- **/data/**
+  - **/raw/**
+    - **/network/**
+      - `UNSW-NB15_1.csv`
 
 ---
 

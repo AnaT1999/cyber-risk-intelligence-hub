@@ -34,10 +34,11 @@ Move o ficheiro `archive.zip` para:
 
 
 A estrutura deverá ficar assim:
-/data/
-  |_/raw/
-     |_/threat_intel/
-        |_archive.zip
+
+- **/data/**
+  - **/raw/**
+    - **/threat_intel/**
+      - `archive.zip`
 
 
 ---

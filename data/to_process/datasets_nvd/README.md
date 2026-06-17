@@ -60,17 +60,19 @@ Após o download:
 ## 4. Onde colocar os ficheiros no repositório
 
 Cria a seguinte estrutura:
-/data/
-/to_process/
-/datasets_nvd/
-nvdcve-2.0-2019.json
-nvdcve-2.0-2020.json
-nvdcve-2.0-2021.json
-nvdcve-2.0-2022.json
-nvdcve-2.0-2023.json
-nvdcve-2.0-2024.json
-nvdcve-2.0-2025.json
-nvdcve-2.0-2026.json
+
+- **/data/**
+  - **/to_process/**
+    - **/datasets_nvd/**
+      - `nvdcve-2.0-2019.json`
+      - `nvdcve-2.0-2020.json`
+      - `nvdcve-2.0-2021.json`
+      - `nvdcve-2.0-2022.json`
+      - `nvdcve-2.0-2023.json`
+      - `nvdcve-2.0-2024.json`
+      - `nvdcve-2.0-2025.json`
+      - `nvdcve-2.0-2026.json`
+
 
 
 Se utilizares outro diretório, ajusta o caminho no script de treino.
