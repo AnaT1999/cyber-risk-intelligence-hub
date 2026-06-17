@@ -8,24 +8,86 @@ except ImportError:
     PDF_DISPONIVEL = False
 
 def clean_float_pdf(val_str):
-    """Limpa símbolos monetários e formatações numéricas de texto extraído de PDF."""
+    """Limpa símbolos monetários e lida com formatos numéricos mundiais de forma blindada."""
     if not val_str: return None
-    val_str = re.sub(r'[^\d\.,]', '', str(val_str))
+    val_str = str(val_str).strip()
+    
+    # Remove tudo exceto dígitos, vírgula, ponto e sinal negativo
+    val_str = re.sub(r'[^\d\.,\-]', '', val_str)
     if not val_str: return None
     
-    if ',' in val_str and '.' in val_str:
+    commas = val_str.count(',')
+    dots = val_str.count('.')
+    
+    if commas > 1 and dots <= 1:
+        val_str = val_str.replace(',', '')
+    elif dots > 1 and commas <= 1:
+        val_str = val_str.replace('.', '').replace(',', '.')
+    elif commas == 1 and dots == 1:
         if val_str.rfind(',') > val_str.rfind('.'):
-            val_str = val_str.replace('.', '').replace(',', '.') # Estilo Europeu
+            val_str = val_str.replace('.', '').replace(',', '.')
         else:
-            val_str = val_str.replace(',', '') # Estilo Americano
-    else:
-        val_str = val_str.replace(',', '.')
-        
+            val_str = val_str.replace(',', '')
+    elif commas == 1 and dots == 0:
+        parts = val_str.split(',')
+        if len(parts) == 2 and len(parts[1]) == 3:
+            val_str = val_str.replace(',', '')
+        else:
+            val_str = val_str.replace(',', '.')
+    elif dots == 1 and commas == 0:
+        parts = val_str.split('.')
+        if len(parts) == 2 and len(parts[1]) == 3:
+            val_str = val_str.replace('.', '')
+            
     try: return float(val_str)
     except: return None
 
+def find_financial_value(text, keywords):
+    """Radar Financeiro com Filtro Anti-Spoofing."""
+    for kw in keywords:
+        # Captura o texto que está entre a palavra-chave e o número
+        pattern = rf'({kw})([\s\S]{{0,80}}?)([1-9][\d\.,]{{4,}})'
+        for match in re.finditer(pattern, text, re.IGNORECASE):
+            miolo = match.group(2).lower()
+            
+            # Se o valor estiver acompanhado do nosso jargão de erro, ignora a leitura!
+            if "assumido" in miolo or "não detetad" in miolo or "placeholder" in miolo:
+                continue 
+                
+            val = clean_float_pdf(match.group(3))
+            # Ignora anos (ex: 2026) apanhados por engano
+            if val is not None and val > 3000:
+                return val
+    return None
+
+def find_data_sensitivity(text):
+    """Janela de Contexto de Alta Precisão para Dados."""
+    keywords = r'(?i)(dados|data|information|sensibilidade|classification|criticite|privacy|daten|ficheiros|files|información)'
+    matches = list(re.finditer(keywords, text))
+    
+    for m in matches:
+        # CORREÇÃO CRÍTICA: Recua apenas 5 caracteres para não ler a linha de cima por engano.
+        # Foca-se em ler 65 caracteres para a frente.
+        start = max(0, m.start() - 5)
+        end = min(len(text), m.end() + 65)
+        context = text[start:end]
+        
+        # PRIORIDADE 1: Níveis Explícitos (A palavra 'Tier' foi removida para evitar conflitos com o NIST)
+        lvl_match = re.search(r'(?:Nível|Level|Stufe)\W*([1-5])', context, re.IGNORECASE)
+        if lvl_match: 
+            return int(lvl_match.group(1))
+        
+        # PRIORIDADE 2: Avaliação Semântica das Palavras
+        if re.search(r'(?:Crític|Critical|Kritisch|Regulados|Pessoais)', context, re.IGNORECASE): return 5
+        if re.search(r'(?:Secret|Top Secret)', context, re.IGNORECASE): return 4
+        if re.search(r'(?:Altamente Confidencial|Confidencial|Confidential|Confidentiel)', context, re.IGNORECASE): return 3
+        if re.search(r'(?:Intern|Internal)', context, re.IGNORECASE): return 2
+        if re.search(r'(?:Públic|Public)', context, re.IGNORECASE): return 1
+        
+    return None
+
 def parse_pdf_risk(file) -> dict:
-    """Motor Semântico para extração de métricas de texto desestruturado (PDF)."""
+    """Motor Semântico de Contexto para extração em PDF."""
     if not PDF_DISPONIVEL:
         return {"erro": "O pacote 'pypdf' está em falta. Execute `pip install pypdf` no terminal."}
         
@@ -35,31 +97,20 @@ def parse_pdf_risk(file) -> dict:
         for page in reader.pages:
             full_text += page.extract_text() + "\n"
     except Exception as e:
-        return {"erro": f"Não foi possível ler o PDF. Ficheiro corrompido ou protegido? Detalhe: {str(e)}"}
+        return {"erro": f"Não foi possível ler o PDF. Detalhe: {str(e)}"}
         
     alertas = []
-    
-    '''
-    # --- PASSO 0: IDENTIFICAÇÃO DO TIPO ---
-    if re.search(r'CISA|CYBER SECURITY EVALUATION TOOL|RANSOMWARE READINESS', full_text, re.IGNORECASE):
-        # Chama o motor para PDF complexo (CISA/NIST)
-        return parse_cisa_pdf(full_text)
-    else:
-        # Chama o teu motor original (o que já funciona para os teus formulários)
-        return parse_standard_pdf(full_text)
-    '''
 
     # --- 1. EXTRAÇÃO FINANCEIRA ---
-    # No PDF, o número aparece habitualmente na linha abaixo do título. 
-    ale_match = re.search(r'(?:Perda Média Esperada|Perda Anual Esperada|ALE)[\s\S]{0,60}?([\d\.,]+)\s*(?:€|EUR)', full_text, re.IGNORECASE)
-    ale_val = clean_float_pdf(ale_match.group(1)) if ale_match else None
+    ale_keywords = [r'\bALE\b', r'Perda Média', r'Perda Anual', r'Annual[\s_]*Loss', r'Prejuízo', r'Perte Financière', r'Pérdida']
+    ale_val = find_financial_value(full_text, ale_keywords)
     
     if ale_val is None:
         ale_val = 50000.0
         alertas.append("Métrica financeira de Perda (ALE) não detetada no PDF. Assumido placeholder: 50.000 €.")
 
-    rev_match = re.search(r'(?:Faturacao|Orcamento Anual|Orçamento|Faturação|Revenue)[\s\S]{0,60}?([\d\.,]+)\s*(?:€|EUR)', full_text, re.IGNORECASE)
-    revenue = clean_float_pdf(rev_match.group(1)) if rev_match else None
+    rev_keywords = [r'Faturação', r'Faturacao', r'Orçamento', r'Revenue', r'Turnover', r'Budget', r'Chiffre', r'Ingresos']
+    revenue = find_financial_value(full_text, rev_keywords)
     
     if revenue is None:
         revenue = 1000000.0
@@ -67,32 +118,34 @@ def parse_pdf_risk(file) -> dict:
 
     # --- 2. EXTRAÇÃO DA MATURIDADE NIST ---
     nist = 1
-    nist_match = re.search(r'(?:Tier\s*|NIST\s*Tier\s*|Maturidade\s*Tier\s*)([1-4])', full_text, re.IGNORECASE)
-    if nist_match:
-        nist = int(nist_match.group(1))
-    else:
-        alertas.append("Maturidade NIST não detetada no texto do PDF. Assumido placeholder: Tier 1.")
+    nist_found = False
+    for m in re.finditer(r'(?:Tier\W*|Nível\W*|Niveau\W*|Level\W*|Stufe\W*|Maturidade\W*|NIST\W*)([1-4])', full_text, re.IGNORECASE):
+        context_before = full_text[max(0, m.start()-40):m.start()].lower()
+        if "assumido" not in context_before and "não detetad" not in context_before:
+            nist = int(m.group(1))
+            nist_found = True
+            break
+            
+    if not nist_found:
+        alertas.append("Maturidade NIST não detetada claramente no texto do PDF. Assumido placeholder: Tier 1.")
 
     # --- 3. EXTRAÇÃO DA SENSIBILIDADE DE DADOS ---
-    q_dados = 3
-    if re.search(r'(?:Críticos|Regulados|Pessoais|Critical|Nível 5|Level 5)', full_text, re.IGNORECASE): q_dados = 5
-    elif re.search(r'(?:Secretos|Secret|Nível 4|Level 4)', full_text, re.IGNORECASE): q_dados = 4
-    elif re.search(r'(?:Altamente Confidenciais|Confidenciais|Confidential|Nível 3|Level 3)', full_text, re.IGNORECASE): q_dados = 3
-    elif re.search(r'(?:Internos|Internal|Nível 2|Level 2)', full_text, re.IGNORECASE): q_dados = 2
-    elif re.search(r'(?:Públicos|Public|Nível 1|Level 1)', full_text, re.IGNORECASE): q_dados = 1
-    else:
+    q_dados = find_data_sensitivity(full_text)
+    
+    if q_dados is None:
+        q_dados = 3
         alertas.append("Classificação de sensibilidade de dados não detetada no PDF. Assumido placeholder: Nível 3.")
 
     # --- 4. EXTRAS (IoT e Velocidade de Resposta) ---
     iot_val = "Moderada"
     if re.search(r'(?:IoT.*Crítica|IoT.*Critical|Exposição IoT[\s\S]{0,100}?Crítica)', full_text, re.IGNORECASE): iot_val = "Crítica"
     elif re.search(r'(?:IoT.*Baixa|IoT.*Low|Exposição IoT[\s\S]{0,100}?Baixa)', full_text, re.IGNORECASE): iot_val = "Baixa"
-    elif re.search(r'(?:IoT.*Inexistente|IoT.*None|Exposição IoT[\s\S]{0,100}?Inexistente)', full_text, re.IGNORECASE): iot_val = "Inexistente"
+    elif re.search(r'(?:IoT.*Inexistente|IoT.*None|Exposição IoT[\s\S]{0,100}?Inexistente|inexistente)', full_text, re.IGNORECASE): iot_val = "Inexistente"
     
     dwell_val = "Dias"
-    # Lida com expressões frequentes no PDF como "em menos de 1 hora"
-    if re.search(r'(?:Resposta.*Minutos|Reação.*Minutos|menos de 1 hora)', full_text, re.IGNORECASE): dwell_val = "Minutos"
-    elif re.search(r'(?:Resposta.*Semanas|Reação.*Semanas)', full_text, re.IGNORECASE): dwell_val = "Semanas"
+    if re.search(r'(?:Resposta.*Minutos|Reação.*Minutos|menos de 1 hora|Minutes)', full_text, re.IGNORECASE): dwell_val = "Minutos"
+    elif re.search(r'(?:Resposta.*Semanas|Reação.*Semanas|Weeks)', full_text, re.IGNORECASE): dwell_val = "Semanas"
+    elif re.search(r'(?:Resposta.*Dias|Reação.*Dias)', full_text, re.IGNORECASE): dwell_val = "Dias"
 
     return {
         "ale_val": ale_val,
