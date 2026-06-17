@@ -1,4 +1,4 @@
-# CVE, CISA KEV & EPSS — Dataset Estático (Kaggle)
+# CVE, CISA KEV & EPSS - Dataset Estático (Kaggle)
 
 Este repositório utiliza um dataset estático proveniente do Kaggle para alimentar os dashboards presentes em:
 `pages/1_Dashboard_Estatico.py`
@@ -34,10 +34,10 @@ Move o ficheiro `archive.zip` para:
 
 
 A estrutura deverá ficar assim:
-`/data/`
-`  |_/raw/`
-`     |_/threat_intel/`
-`        |_archive.zip`
+/data/
+  |_/raw/
+     |_/threat_intel/
+        |_archive.zip
 
 
 ---
@@ -47,8 +47,8 @@ A estrutura deverá ficar assim:
 Dentro da pasta `data/raw/threat_intel/`, extrai o ficheiro `archive.zip`.
 
 Após a extração, deverão aparecer **exatamente dois ficheiros CSV**:
-`cve_cisa_epss_enriched_dataset.csv`
-`cve_corpus.csv`
+- `cve_cisa_epss_enriched_dataset.csv`
+- `cve_corpus.csv`
 
 
 Estes são os ficheiros utilizados pelos dashboards.
@@ -75,9 +75,9 @@ Os dashboards que utilizam estes dados encontram-se em:
 
 O dataset combina três fontes:
 
-- **NVD (National Vulnerability Database)** — CVEs, CVSS, vetores de ataque, impacto, etc.
-- **CISA KEV** — vulnerabilidades ativamente exploradas.
-- **EPSS (Exploit Prediction Scoring System)** — probabilidade de exploração.
+- **NVD (National Vulnerability Database)** - CVEs, CVSS, vetores de ataque, impacto, etc.
+- **CISA KEV** - vulnerabilidades ativamente exploradas.
+- **EPSS (Exploit Prediction Scoring System)** - probabilidade de exploração.
 
 É fornecido em formato CSV e atualizado regularmente na fonte original, mas **neste projeto é usado como dataset estático**.
 

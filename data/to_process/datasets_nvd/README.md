@@ -43,14 +43,14 @@ Após o download:
 
 1. Extrai cada um dos 8 ficheiros `.zip`.
 2. No final, deverás obter **exatamente 8 ficheiros JSON**, com os seguintes nomes:
-`nvdcve-2.0-2019.json`
-`nvdcve-2.0-2020.json`
-`nvdcve-2.0-2021.json`
-`nvdcve-2.0-2022.json`
-`nvdcve-2.0-2023.json`
-`nvdcve-2.0-2024.json`
-`nvdcve-2.0-2025.json`
-`nvdcve-2.0-2026.json`
+- `nvdcve-2.0-2019.json`
+- `nvdcve-2.0-2020.json`
+- `nvdcve-2.0-2021.json`
+- `nvdcve-2.0-2022.json`
+- `nvdcve-2.0-2023.json`
+- `nvdcve-2.0-2024.json`
+- `nvdcve-2.0-2025.json`
+- `nvdcve-2.0-2026.json`
 
 
 > **Nota:** Os nomes podem variar ligeiramente dependendo do sistema operativo, mas devem seguir o padrão `nvdcve-2.0-YYYY.json`.
@@ -60,17 +60,17 @@ Após o download:
 ## 4. Onde colocar os ficheiros no repositório
 
 Cria a seguinte estrutura:
-`/data/`
-`  |_/to_process/`
-`    |_/datasets_nvd/`
-`       |_nvdcve-2.0-2019.json`
-`       |_nvdcve-2.0-2020.json`
-`       |_nvdcve-2.0-2021.json`
-`       |_nvdcve-2.0-2022.json`
-`       |_nvdcve-2.0-2023.json`
-`       |_nvdcve-2.0-2024.json`
-`       |_nvdcve-2.0-2025.json`
-`       |_nvdcve-2.0-2026.json`
+/data/
+  |_/to_process/
+    |_/datasets_nvd/
+       |_nvdcve-2.0-2019.json
+       |_nvdcve-2.0-2020.json
+       |_nvdcve-2.0-2021.json
+       |_nvdcve-2.0-2022.json
+       |_nvdcve-2.0-2023.json
+       |_nvdcve-2.0-2024.json
+       |_nvdcve-2.0-2025.json
+       |_nvdcve-2.0-2026.json
 
 
 Se utilizares outro diretório, ajusta o caminho no script de treino.
@@ -97,7 +97,7 @@ O modelo treinado encontra-se em:
 
 ## 6. Referências oficiais
 
-- NVD Data Feeds — JSON 2.0  
+- NVD Data Feeds - JSON 2.0  
   https://nvd.nist.gov/vuln/data-feeds#divJson20Feeds
 
 ---

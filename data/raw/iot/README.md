@@ -1,4 +1,4 @@
-# IoT Cyber Behavior Dataset — Dataset Estático (Kaggle)
+# IoT Cyber Behavior Dataset - Dataset Estático (Kaggle)
 
 Este repositório utiliza um dataset estático proveniente do Kaggle para alimentar os dashboards presentes em:
 `pages/1_Dashboard_Estatico.py`
@@ -32,10 +32,10 @@ Move o ficheiro `archive.zip` para:
 
 
 A estrutura deverá ficar assim:
-`/data/`
-`  |_/raw/`
-`     |_/iot/`
-`        |_archive.zip`
+/data/
+ |_/raw/
+    |_/iot/
+       |_archive.zip
 
 
 ---
@@ -78,15 +78,15 @@ O dataset contém registos de comportamento de dispositivos IoT, incluindo:
 
 Inclui ainda um campo de classificação (`class_label`) com:
 
-- **0 — Genuine**  
-- **1 — Compromised**  
-- **2 — Counterfeit** (dependendo da versão do dataset)
+- **0 - Genuine**  
+- **1 - Compromised**  
+- **2 - Counterfeit** (dependendo da versão do dataset)
 
 ---
 
 ## 6. Referência oficial
 
-Kaggle — IoT Cyber Behavior Dataset  
+Kaggle - IoT Cyber Behavior Dataset  
 https://www.kaggle.com/datasets/programmer3/iot-cyber-behavior-dataset
 
 ---

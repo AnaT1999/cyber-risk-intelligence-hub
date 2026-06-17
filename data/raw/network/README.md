@@ -1,4 +1,4 @@
-# UNSW-NB15 — Dataset Estático (Kaggle)
+# UNSW-NB15 - Dataset Estático (Kaggle)
 
 Este repositório utiliza parte do dataset **UNSW-NB15**, disponível no Kaggle, para alimentar os dashboards presentes em:
 `pages/1_Dashboard_Estatico.py`
@@ -33,10 +33,10 @@ Move o ficheiro `archive.zip` para:
 
 
 A estrutura deverá ficar assim:
-`/data/`
-`  |_/raw/`
-`     |_/network/`
-`        |_archive.zip`
+/data/
+  |_/raw/
+     |_/network/
+        |_archive.zip
 
 
 ---
@@ -67,10 +67,10 @@ Diferente dos outros datasets, **apenas um ficheiro é necessário**:
 Todos os restantes ficheiros podem ser removidos após a extração.
 
 A estrutura final deverá ser:
-`/data/`
-`  |_/raw/`
-`     |_/network/`
-`        |_UNSW-NB15_1.csv`
+/data/
+  |_/raw/
+     |_/network/
+        |_UNSW-NB15_1.csv
 
 ---
 
@@ -105,7 +105,7 @@ Neste projeto, apenas o ficheiro **UNSW-NB15_1.csv** é utilizado para visualiza
 
 ## 7. Referência oficial
 
-Kaggle — UNSW-NB15 Dataset  
+Kaggle - UNSW-NB15 Dataset  
 https://www.kaggle.com/datasets/mrwellsdavid/unsw-nb15
 
 ---
