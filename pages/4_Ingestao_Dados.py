@@ -2,13 +2,20 @@ import streamlit as st
 from utils.parser_json import parse_json_risk
 from utils.parser_excel import parse_excel_risk
 from utils.parser_pdf import parse_pdf_risk
+from utils.ui_components import apply_custom_theme, render_hero_section, render_footer, HERO_IMAGES
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="Ingestão de Dados", layout="wide", page_icon=":material/cloud_upload:")
+st.set_page_config(page_title="Ingestão de Dados", layout="wide", page_icon=":material/download:")
 
-st.title(":material/cloud_upload: Ingestão Automática de Telemetria")
-st.markdown("Faça o upload de auditorias anteriores (JSON, Excel ou PDF). O motor de mineração irá extrair automaticamente as métricas para alimentar o simulador preditivo.")
-st.divider()
+# 1. Aplica o Tema Dinâmico e o Fundo Animado
+apply_custom_theme()
+
+# 2. Hero Section com imagem de Redes/Servidores
+render_hero_section(
+    title="Ingestão Automática de Telemetria",
+    subtitle="Faça o upload de auditorias anteriores (JSON, Excel ou PDF). O motor de mineração irá extrair automaticamente as métricas para alimentar o simulador preditivo.",
+    image_url=HERO_IMAGES["network"]
+)
 
 # --- INTERFACE DE UPLOAD ---
 st.markdown("### :material/upload_file: Selecione o Ficheiro de Auditoria")
@@ -26,7 +33,7 @@ if ficheiro_carregado is not None:
             if chave in st.session_state:
                 del st.session_state[chave]
                 
-        with st.spinner(":material/sync: O motor de inteligência do Hub está a analisar o documento..."):
+        with st.spinner("A processar e minerar dados do documento através do motor de inteligência..."):
             if nome_ficheiro.endswith(".json"): 
                 dados_extraidos = parse_json_risk(ficheiro_carregado)
             elif nome_ficheiro.endswith(".xlsx"): 
@@ -50,18 +57,18 @@ if ficheiro_carregado is not None:
 
     # Se houver um erro grave (formatação corrompida)
     if "erro" in dados_extraidos:
-        st.error(f":material/cancel: **Erro de Ingestão:** {dados_extraidos['erro']}")
+        st.error(f"**Erro de Ingestão:** {dados_extraidos['erro']}")
         
     else:
         # --- EXIBIÇÃO DE ALERTAS E FEEDBACK ---
         if not st.session_state.get('dados_confirmados', False):
             if dados_extraidos.get("alertas"):
-                st.warning(":material/warning: **Aviso de Integridade:** Faltam campos essenciais no documento. Injetámos placeholders, mas **deve corrigi-los manualmente abaixo**.")
+                st.warning("**Aviso de Integridade:** Faltam campos essenciais no documento. Injetámos placeholders, mas **deve corrigi-los manualmente abaixo**.")
                 with st.expander("Ver detalhes do que falhou na leitura"):
                     for alerta in dados_extraidos["alertas"]:
                         st.markdown(f"- {alerta}")
             else:
-                st.success(f":material/check_circle: **Ficheiro lido com 100% de precisão!** Fonte: **{dados_extraidos['origem']}**")
+                st.success(f"**Ficheiro lido com 100% de precisão!** Fonte: **{dados_extraidos['origem']}**")
 
         # --- MODO 1: MOSTRAR DADOS ESTÁTICOS ---
         if not st.session_state.get('mostrar_edicao', False) or st.session_state.get('dados_confirmados', False):
@@ -70,7 +77,7 @@ if ficheiro_carregado is not None:
             with st.container(border=True):
                 col1, col2, col3, col4 = st.columns(4)
                 
-                # Lê os valores guardados OU os que vieram diretos do parser (agora sem conflitos)
+                # Lê os valores guardados OU os que vieram diretos do parser
                 ale_display = st.session_state.get('ale_val', dados_extraidos['ale_val'])
                 rev_display = st.session_state.get('revenue', dados_extraidos['revenue'])
                 nist_display = st.session_state.get('nist_mat', dados_extraidos['nist_mat'])
@@ -126,16 +133,13 @@ if ficheiro_carregado is not None:
                 st.session_state['dados_completos'] = dados_extraidos.get("dados_completos", {})
 
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("""
-            <style>
-            [data-testid="stPageLink"] a { background-color: #1e3a8a !important; border: 1px solid #3b82f6 !important; color: #eff6ff !important; padding: 20px !important; border-radius: 12px !important; text-align: center !important; font-size: 1.25rem !important; font-weight: 600 !important; box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important; transition: all 0.3s ease-in-out !important; display: flex !important; justify-content: center !important; text-decoration: none !important; }
-            [data-testid="stPageLink"] a:hover { background-color: #1e40af !important; border-color: #60a5fa !important; transform: translateY(-3px) !important; box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important; }
-            [data-testid="stPageLink"] a p { font-size: 1.15rem !important; margin: 0 !important; }
-            </style>
-            """, unsafe_allow_html=True)
-
-            st.page_link(page="pages/3_Simulador_Cenarios.py", label="Injetar Dados Ingeridos no Simulador Preditivo e Correr Monte Carlo", icon=":material/arrow_forward:", use_container_width=True)
+            
+            st.page_link(
+                page="pages/3_Simulador_Cenarios.py", 
+                label="Injetar Dados Ingeridos no Simulador Preditivo e Correr Monte Carlo", 
+                icon=":material/arrow_forward:", 
+                use_container_width=True
+            )
 
 st.markdown("<br><br><br>", unsafe_allow_html=True)
-st.markdown("---")
-st.caption("Desenvolvido no âmbito da disciplina de Avaliação do Risco em Cibersegurança | © 2026")
+render_footer()

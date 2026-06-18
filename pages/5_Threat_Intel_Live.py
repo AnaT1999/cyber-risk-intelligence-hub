@@ -4,19 +4,25 @@ import datetime
 from utils.api_helpers import fetch_live_threat_intel
 from utils.live_dashboards import plot_top_threats_bar, plot_cvss_vs_ia_scatter, plot_threat_distribution_donut
 from utils.gerador_pdf_live import gerar_relatorio_live
+from utils.ui_components import apply_custom_theme, render_hero_section, render_footer, HERO_IMAGES
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Threat Intel Live", layout="wide", page_icon=":material/radar:")
 
-st.title(":material/radar: Threat Intelligence & Previsão em Tempo Real")
-st.markdown("O nosso motor **XGBoost Otimizado** analisa dezenas de vulnerabilidades em tempo real cruzando dados da **NIST NVD**. A IA destaca o que é verdadeiramente crítico (prioridade de Patching), reduzindo a fadiga de falsos alarmes em mais de 75%.")
-st.divider()
+# 1. Aplica o Tema Dinâmico e o Fundo Animado
+apply_custom_theme()
+
+# 2. Hero Section com imagem de SOC / Dashboard
+render_hero_section(
+    title="Threat Intelligence em Tempo Real",
+    subtitle="O motor XGBoost analisa vulnerabilidades em tempo real cruzando dados da NIST NVD. A IA destaca o que é crítico (prioridade de Patching), reduzindo falsos alarmes em mais de 75%.",
+    image_url=HERO_IMAGES["dashboard"]
+)
 
 # --- BOTÃO DE SINCRONIZAÇÃO E LÓGICA DE CHAMADA ---
 col_sync, col_status = st.columns([1, 3])
 with col_sync:
-    # Correção do aviso "use_container_width" -> "width"
-    if st.button(":material/sync: Varrer API ao Vivo", type="primary"):
+    if st.button(":material/sync: Varrer API ao Vivo", use_container_width=True):
         st.session_state['recarregar_api'] = True
 
 if 'resultados_api' not in st.session_state or st.session_state.get('recarregar_api', False):
@@ -52,7 +58,7 @@ else:
         
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # --- SECÇÃO DE DASHBOARDS (Os gráficos continuam a aparecer lindamente no site) ---
+    # --- SECÇÃO DE DASHBOARDS ---
     st.markdown("### :material/monitoring: Radares de Risco (Motor XGBoost)")
     
     fig_scatter = plot_cvss_vs_ia_scatter(df_live)
@@ -111,8 +117,8 @@ else:
             label=":material/download: Executive Threat Briefing (PDF)",
             data=pdf_bytes,
             file_name=f"Threat_Briefing_{data_ficheiro}.pdf",
-            mime="application/pdf",
-            type="primary"
+            mime="application/pdf"
         )
 
-st.caption("Desenvolvido no âmbito da disciplina de Avaliação do Risco em Cibersegurança | © 2026")
+st.markdown("<br>", unsafe_allow_html=True)
+render_footer()

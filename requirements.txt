@@ -3,13 +3,10 @@ pandas
 numpy
 scikit-learn
 plotly
-networkx
 joblib
 requests
-datasets
-pyarrow
-fpdf2
 xlsxwriter
 pypdf
 openpyxl
-xgboost 
+xgboost
+reportlab

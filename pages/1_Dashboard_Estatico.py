@@ -2,27 +2,22 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import json
+import streamlit.components.v1 as components
 from utils.visuals import (
     plot_donut_chart, plot_bar_chart, plot_3d_scatter, plot_boxplot, plot_heatmap, plot_scatter, plot_violin,
     plot_otx_timeline, plot_otx_top_campaigns, plot_otx_scatter_iocs
 )
-import streamlit.components.v1 as components
+from utils.ui_components import apply_custom_theme, render_hero_section, render_footer, HERO_IMAGES
 
-st.set_page_config(page_title="Dashboard Estático", layout="wide")
+st.set_page_config(page_title="Dashboard Estático", layout="wide", page_icon=":material/bar_chart:", initial_sidebar_state="expanded")
 
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-    html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: #e2e8f0; }
-    .stApp { background-color: #020617 !important; }
-    section[data-testid="stSidebar"] { background: #020617; border-right: 1px solid rgba(30,64,175,0.6); }
-    .header-title { font-size: 2.5rem; font-weight: 800; color: #f8fafc; margin-bottom: 0px;}
-    </style>
-""", unsafe_allow_html=True)
+apply_custom_theme()
 
-st.markdown('<h1 class="header-title"> Dashboard Estático de Inteligência</h1>', unsafe_allow_html=True)
-st.markdown("Analise o histórico de risco através de dados globais ou importe as suas próprias avaliações.")
-st.divider()
+render_hero_section(
+    title="Dashboard Estático de Inteligência",
+    subtitle="Analise o histórico de risco através de dados globais ou importe as suas próprias avaliações em tempo real.",
+    image_url=HERO_IMAGES["dashboard"]
+)
 
 #---------------------------------------------------------------
 st.sidebar.header("Controlos do Dashboard")
@@ -449,6 +444,5 @@ elif modo_visualizacao == "Dashboards de Raiz":
                     df_box['base_severity'] = df_box['base_severity'].str.upper().str.strip()
                     mapa_cores = {'LOW': '#22c55e', 'MEDIUM': '#eab308', 'HIGH': '#f97316', 'CRITICAL': '#ef4444'}
                     st.plotly_chart(plot_boxplot(df_box, 'base_severity', 'epss_score', 'base_severity', 'A Incoerência do Risco: EPSS Score dentro das Severidades Oficiais', category_orders={'base_severity': ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']}, color_map=mapa_cores, y_tickformat='.1%'), use_container_width=True)
-    
-st.markdown("---")
-st.caption("Desenvolvido no âmbito da disciplina de Avaliação do Risco em Cibersegurança | © 2026")
+
+render_footer()
