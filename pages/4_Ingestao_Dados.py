@@ -26,7 +26,7 @@ if ficheiro_carregado is not None:
             if chave in st.session_state:
                 del st.session_state[chave]
                 
-        with st.spinner(":material/loading: O motor de inteligência do Hub está a analisar o documento..."):
+        with st.spinner(":material/sync: O motor de inteligência do Hub está a analisar o documento..."):
             if nome_ficheiro.endswith(".json"): 
                 dados_extraidos = parse_json_risk(ficheiro_carregado)
             elif nome_ficheiro.endswith(".xlsx"): 

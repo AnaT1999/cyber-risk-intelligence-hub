@@ -1,5 +1,4 @@
 import plotly.express as px
-import pandas as pd
 
 def plot_top_threats_bar(df):
     """Cria um gráfico de barras horizontal com o Top 10 das piores ameaças."""

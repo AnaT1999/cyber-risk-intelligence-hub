@@ -12,3 +12,4 @@ fpdf2
 xlsxwriter
 pypdf
 openpyxl
+xgboost 
