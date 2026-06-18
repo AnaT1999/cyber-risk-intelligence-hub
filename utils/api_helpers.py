@@ -121,3 +121,51 @@ def fetch_live_threat_intel():
     df_resultados = df_resultados.sort_values(by='probabilidade_ia', ascending=False)
 
     return {"sucesso": True, "dados": df_resultados.to_dict('records')}
+def fetch_alienvault_otx(api_key, limit=50):
+    """
+    Busca as campanhas de malware e IoCs mais recentes subscritos pelo utilizador na AlienVault OTX.
+    Requer a inserção de uma API Key válida.
+    """
+    import requests # Garantir que o requests está disponível
+    url = f"https://otx.alienvault.com/api/v1/pulses/subscribed?limit={limit}"
+    
+    headers = {
+        "X-OTX-API-KEY": api_key,
+        "User-Agent": "CyberRiskIntelligenceHub/1.0"
+    }
+    
+    try:
+        # A AlienVault costuma ser rápida, 15s de tolerância
+        resposta = requests.get(url, headers=headers, timeout=15)
+        
+        if resposta.status_code == 200:
+            dados = resposta.json()
+            pulses_brutos = dados.get('results', [])
+            
+            if not pulses_brutos:
+                return {"erro": "Nenhum 'Pulse' encontrado. Certifique-se que segue criadores de conteúdo na sua conta AlienVault."}
+                
+            lista_pulses = []
+            for p in pulses_brutos:
+                tags = p.get('tags', [])
+                # Garantir que as tags vêm em texto (às vezes a API envia valores nulos)
+                tags_limpas = [str(t) for t in tags if t] 
+                
+                lista_pulses.append({
+                    'id': p.get('id', ''),
+                    'nome': p.get('name', 'Sem Nome'),
+                    'autor': p.get('author_name', 'Desconhecido'),
+                    'tags_brutas': tags_limpas,
+                    'tags_texto': ", ".join(tags_limpas),
+                    'num_indicadores': p.get('indicator_count', 0),
+                    'data_criacao': p.get('created', '')[:10]
+                })
+            return {"sucesso": True, "dados": lista_pulses}
+            
+        elif resposta.status_code == 403:
+            return {"erro": "Acesso Negado: A sua API Key da AlienVault é inválida ou não tem permissões."}
+        else:
+            return {"erro": f"O servidor AlienVault recusou a ligação (Código {resposta.status_code})."}
+            
+    except Exception as e:
+        return {"erro": f"Erro de conexão à internet ou à plataforma AlienVault: {str(e)}"}
