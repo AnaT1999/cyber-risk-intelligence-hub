@@ -38,7 +38,7 @@ if modo_visualizacao == "Dashboards Importados":
     
     if url_dashboard:
         st.success("A carregar o motor interativo externo...")
-        components.iframe(url_dashboard, width=None, height=700, scrolling=True)
+        components.iframe(url_dashboard, height=700, scrolling=True)
     
     st.divider()
     
@@ -50,7 +50,7 @@ if modo_visualizacao == "Dashboards Importados":
     if uploaded_files:
         st.success(f"{len(uploaded_files)} relatório(s) carregado(s) com sucesso!")
         for uploaded_file in uploaded_files:
-            st.image(uploaded_file, caption=f"Ficheiro: {uploaded_file.name}", width=None)
+            st.image(uploaded_file, caption=f"Ficheiro: {uploaded_file.name}", use_container_width=True)
             st.markdown("---")
 
 #---------------------------------------------------------------
